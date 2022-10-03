@@ -253,39 +253,32 @@ exports.addMessagePrueba = functions.https.onRequest(async (req, res) => {
                   }
                 );
             const $= cheerio.load(response.data.toString("latin1"));
-            const nombreRutaL=[];
-            const nombreRuta = $(".texto3");
-            nombreRuta.each(function () {
-                    rutas=$(this).find("b").text().trim();
-                    nombreRutaL.push({rutas});
+            const keys=[
+                'nombre',
+                'estado',
+                'carretera',
+                'longitud_km',
+                'tiempo_hrs',
+                'caseta_o_puente',
+                'camion_4_ejes',
+            ];
+            $(".tr_blanco") .each((parentIndex, parentElemnt)=>{
+                let keyIndex=0;
+                const ruta={};
+                $(parentElemnt).children().each((childId, childElemnt)=>{
+                    const value =$(childElemnt).text();
+                        ruta[keys[keyIndex]]=value;
+                        keyIndex++;
                 });
-        const keys=[
-            'nombre',
-            'estado',
-            'carretera',
-            'longitud_km',
-            'tiempo_hrs',
-            'caseta_o_puente',
-            'camion_4_ejes',
-        ];
-        $(".tr_blanco").each((parentIndex, parentElemnt)=>{
-            let keyIndex=0;
-            const ruta={};
-
-            $(parentElemnt).children().each((childId, childElemnt)=>{
-                const value =$(childElemnt).text();
-                if(value){
-                    ruta[keys[keyIndex]]=value;
-                    keyIndex++;
-                }
+                
+                book_data.push(ruta);
             });
-            book_data.push(ruta);
-        });
-        console.log(book_data);
+            console.log(book_data);
         }
         catch(error){
             console.log(error);
         }
+    
     }
     
 getBooks(links);
