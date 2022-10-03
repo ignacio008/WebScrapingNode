@@ -247,8 +247,12 @@ exports.addMessagePrueba = functions.https.onRequest(async (req, res) => {
   exports.addMessagePruebass = functions.https.onRequest(async (req, res) => { 
     async function getBooks(url){
         try{
-            const response = await axios.get(url);
-            const $= cheerio.load(response.data);
+            const response = await axios.get(url,
+                {
+                    responseType: 'arraybuffer',
+                  }
+                );
+            const $= cheerio.load(response.data.toString("latin1"));
             const nombreRutaL=[];
             const nombreRuta = $(".texto3");
             nombreRuta.each(function () {
