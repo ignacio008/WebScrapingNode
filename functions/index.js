@@ -244,6 +244,7 @@ exports.addMessagePrueba = functions.https.onRequest(async (req, res) => {
   const cheerio=require("cheerio");
   const links="http://app.sct.gob.mx/sibuac_internet/ControllerUI?action=cmdSolRutas&tipo=1&red=simplificada&edoOrigen=1&ciudadOrigen=1040&edoDestino=2&ciudadDestino=2080&vehiculos=11";
   const book_data=[];
+  const nombreRutaL=[];
   exports.addMessagePruebass = functions.https.onRequest(async (req, res) => { 
     async function getBooks(url){
         try{
@@ -253,6 +254,12 @@ exports.addMessagePrueba = functions.https.onRequest(async (req, res) => {
                   }
                 );
             const $= cheerio.load(response.data.toString("latin1"));
+            
+        const nombreRuta = $(".texto3");
+        nombreRuta.each(function () {
+                 ruta=$(this).find("b").text().trim();
+                 nombreRutaL.push(ruta);
+             });
             const keys=[
                 'nombre',
                 'estado',
@@ -266,13 +273,14 @@ exports.addMessagePrueba = functions.https.onRequest(async (req, res) => {
                 let keyIndex=0;
                 const ruta={};
                 $(parentElemnt).children().each((childId, childElemnt)=>{
-                    const value =$(childElemnt).text();
+                    const value =$(childElemnt).text().trim();
                         ruta[keys[keyIndex]]=value;
                         keyIndex++;
                 });
                 
                 book_data.push(ruta);
             });
+            book_data.shift();
             console.log(book_data);
         }
         catch(error){
@@ -280,7 +288,12 @@ exports.addMessagePrueba = functions.https.onRequest(async (req, res) => {
         }
     
     }
+   
     
 getBooks(links);
-res.json({result: book_data});
+const onbjRutas={
+    "ruta":nombreRutaL[0],
+    "result":book_data,
+};
+res.json(onbjRutas);
 });
