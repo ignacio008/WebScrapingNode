@@ -297,3 +297,69 @@ const onbjRutas={
 };
 res.json(onbjRutas);
 });
+
+
+//Web scraping2
+  const links2="https://www.truckrouter.com/GlobalMap_Gmap/V2/Console/RouteResults.php?RouteID=402345107297461";
+  const book_data2=[];
+  const nombreRutaL2=[];
+  const rankingItems = [];
+
+exports.addWebScraping3 = functions.https.onRequest(async (req, res) => { 
+    async function getBooks(url){
+        try{
+            const response = await axios.get(url,
+                {
+                    responseType: 'arraybuffer',
+                  }
+                );
+            const $= cheerio.load(response.data);
+            
+        const nombreRuta = $("td");
+        nombreRuta.each(function () {
+                 ruta=$(this).find("font").text().trim();
+                 nombreRutaL2.push(ruta);
+             });
+
+            
+  const rankingTable = $('tr');
+ 
+  for (let index = 0; index < rankingTable.length; index+=2) {
+    let el=rankingTable[index];
+    let el2=rankingTable[index+1];
+    const rank = $('td font a', el).text().trim();;
+    const rank3 = $('td:nth-child(3)', el2).text().trim();;
+    const rank4 = $('td:nth-child(4)', el2).text().trim();;
+    const rank5 = $('td:nth-child(2)', el2).text().trim();;
+
+     rankingItems.push(
+         {
+           nombre: rank,
+           tiempo_hrs:rank3,
+           precio:rank4,
+           longitud_km:rank5,
+           estado:rank,
+           caseta_o_puente:'',
+           camion_4_ejes:'',
+         }
+       )
+  }
+  
+  
+console.log(rankingItems);
+        }
+        catch(error){
+            console.log(error);
+        }
+    
+    }
+   
+    
+getBooks(links2);
+const onbjRutas={
+    "ruta":nombreRutaL2[0],
+    "result":rankingItems,
+};
+res.json(onbjRutas);
+});
+
