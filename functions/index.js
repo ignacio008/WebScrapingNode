@@ -300,15 +300,15 @@ res.json(onbjRutas);
 
 
 //Web scraping2
-  const links2="https://www.truckrouter.com/GlobalMap_Gmap/V2/Console/RouteResults.php?RouteID=402345107297461";
+  const links2="https://www.truckrouter.com/GlobalMap_Gmap/V2/Console/RouteResults.php?RouteID=124234699434756";
   const book_data2=[];
   const nombreRutaL2=[];
   const rankingItems = [];
 
 exports.addWebScraping3 = functions.https.onRequest(async (req, res) => { 
-    async function getBooks(url){
+     async function getBooks(url){
         try{
-            const response = await axios.get(url,
+            const response = await axios.get(links2,
                 {
                     responseType: 'arraybuffer',
                   }
@@ -320,8 +320,6 @@ exports.addWebScraping3 = functions.https.onRequest(async (req, res) => {
                  ruta=$(this).find("font").text().trim();
                  nombreRutaL2.push(ruta);
              });
-
-            
   const rankingTable = $('tr');
  
   for (let index = 0; index < rankingTable.length; index+=2) {
@@ -361,5 +359,10 @@ const onbjRutas={
     "result":rankingItems,
 };
 res.json(onbjRutas);
+var elementosRemovidos = rankingItems.splice(0, rankingItems.length);
+console.log(elementosRemovidos);
+console.log(rankingItems);
 });
+
+
 
