@@ -298,13 +298,11 @@ const onbjRutas={
 res.json(onbjRutas);
 });
 
-
 //Web scraping2
   const links2="https://www.truckrouter.com/GlobalMap_Gmap/V2/Console/RouteResults.php?RouteID=124234699434756";
   const book_data2=[];
   const nombreRutaL2=[];
   const rankingItems = [];
-
 exports.addWebScraping3 = functions.https.onRequest(async (req, res) => { 
      async function getBooks(url){
         try{
@@ -313,15 +311,13 @@ exports.addWebScraping3 = functions.https.onRequest(async (req, res) => {
                     responseType: 'arraybuffer',
                   }
                 );
-            const $= cheerio.load(response.data);
-            
+            const $= cheerio.load(response.data);          
         const nombreRuta = $("td");
         nombreRuta.each(function () {
                  ruta=$(this).find("font").text().trim();
                  nombreRutaL2.push(ruta);
              });
   const rankingTable = $('tr');
- 
   for (let index = 0; index < rankingTable.length; index+=2) {
     let el=rankingTable[index];
     let el2=rankingTable[index+1];
@@ -329,7 +325,6 @@ exports.addWebScraping3 = functions.https.onRequest(async (req, res) => {
     const rank3 = $('td:nth-child(3)', el2).text().trim();;
     const rank4 = $('td:nth-child(4)', el2).text().trim();;
     const rank5 = $('td:nth-child(2)', el2).text().trim();;
-
      rankingItems.push(
          {
            nombre: rank,
@@ -341,18 +336,13 @@ exports.addWebScraping3 = functions.https.onRequest(async (req, res) => {
            camion_4_ejes:'',
          }
        )
-  }
-  
-  
+  } 
 console.log(rankingItems);
         }
         catch(error){
             console.log(error);
         }
-    
-    }
-   
-    
+    } 
 getBooks(links2);
 const onbjRutas={
     "ruta":nombreRutaL2[0],
@@ -366,3 +356,99 @@ console.log(rankingItems);
 
 
 
+//WEB SCRAPING FINAL
+    exports.addWebScrapingFinal = functions.https.onRequest(async (req, res) => {
+        
+    let id = req.query.id;
+
+    let VVehType= req.query.VVehType;
+    let TTxtFrom= req.query.TTxtFrom;
+    let LLatFrom= req.query.LLatFrom;
+    let LLonFrom= req.query.LLonFrom;
+    let TTxtTo= req.query.TTxtTo;
+    let LLatTo= req.query.LLatTo;
+    let LLonTo= req.query.LLonTo;
+    
+    let urlTabla=`https://www.truckrouter.com/GlobalMap_Gmap/V2/Console/RouteProcess.php?VVehType=${VVehType}&TTxtFrom=${TTxtFrom}&LLatFrom=${LLatFrom}&LLonFrom=${LLonFrom}&TTxtTo=${TTxtTo}&LLatTo=${LLatTo}&LLonTo=${LLonTo}`
+
+    
+  let routeId="";
+    let url=`https://www.truckrouter.com/GlobalMap_Gmap/V2/Console/RouteResults.php?RouteID=${id}`
+
+        console.log(url);
+        async function getlink1(url){
+            try{
+                const response = await axios.get(url,
+                    {
+                        responseType: 'arraybuffer',
+                      }
+                    );
+                const $= cheerio.load(response.data);
+                
+            const nombreRuta = $("iframe");
+            nombreRuta.each(function () {
+                     ruta=$(this).attr("src");
+                     routeId=ruta;
+                     nombreRutaL.push(ruta);
+                 });
+let routeIds=routeId.substring(24);
+getBooks(routeIds);
+     console.log(rankingItems);
+            }
+            catch(error){
+                console.log(error);
+            }
+        }
+    async function getBooks(routeId){
+        let url=`https://www.truckrouter.com/GlobalMap_Gmap/V2/Console/RouteResults.php?RouteID=${routeId}`
+       try{
+           const response = await axios.get(url,
+               {
+                   responseType: 'arraybuffer',
+                 }
+               );
+           const $= cheerio.load(response.data.toString("latin1"));
+           
+       const nombreRuta = $("td");
+       nombreRuta.each(function () {
+                ruta=$(this).find("font").text().trim();
+                nombreRutaL2.push(ruta);
+            });
+ const rankingTable = $('tr');
+
+ for (let index = 0; index < rankingTable.length; index+=2) {
+   let el=rankingTable[index];
+   let el2=rankingTable[index+1];
+   const rank = $('td font a', el).text().trim();;
+   const rank3 = $('td:nth-child(3)', el2).text().trim();;
+   const rank4 = $('td:nth-child(4)', el2).text().trim();;
+   const rank5 = $('td:nth-child(2)', el2).text().trim();;
+
+    rankingItems.push(
+        {
+          nombre: rank,
+          tiempo_hrs:rank3,
+          precio:rank4,
+          longitud_km:rank5,
+          estado:rank,
+          caseta_o_puente:'',
+          camion_4_ejes:'',
+        }
+      )
+ }
+console.log(rankingItems);
+       }
+       catch(error){
+           console.log(error);
+       }
+   }
+   getlink1(urlTabla); 
+const onbjRutas={
+   "ruta":nombreRutaL2[0],
+   "result":rankingItems,
+};
+res.json(onbjRutas);
+var elementosRemovidos = rankingItems.splice(0, rankingItems.length);
+console.log(elementosRemovidos);
+console.log(rankingItems);
+});
